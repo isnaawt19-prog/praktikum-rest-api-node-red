@@ -1,0 +1,266 @@
+[
+    {
+        "id": "66fa1f7c4b2f4156",
+        "type": "tab",
+        "label": "REST API IoT",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bcf532cd3e18f6fb",
+        "type": "mqtt in",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Subscribe Sensor",
+        "topic": "iot/sensor",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6631788550f7c0b4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "9fe64665192e9809"
+            ]
+        ]
+    },
+    {
+        "id": "9fe64665192e9809",
+        "type": "function",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Simpan Data Sensor",
+        "func": "\n// Mengambil data sensor\nvar data = msg.payload;\n\n// Menambahkan waktu penerimaan\ndata.received = new Date().toISOString();\n\n// Menyimpan data sensor terakhir\nflow.set('lastSensor', data);\n\n// Menyimpan riwayat sensor\nvar history = flow.get('history') || [];\n\nhistory.push(data);\n\n// Maksimal 50 data\nif (history.length > 50) {\n    history.shift();\n}\n\nflow.set('history', history);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 240,
+        "wires": [
+            [
+                "bd8e76fd971dc4ed"
+            ]
+        ]
+    },
+    {
+        "id": "bd8e76fd971dc4ed",
+        "type": "debug",
+        "z": "66fa1f7c4b2f4156",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "712013832c80c0ef",
+        "type": "http in",
+        "z": "66fa1f7c4b2f4156",
+        "name": "GET Data Suhu",
+        "url": "/api/suhu",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 360,
+        "wires": [
+            [
+                "e2660088c7cbe26a"
+            ]
+        ]
+    },
+    {
+        "id": "e2660088c7cbe26a",
+        "type": "function",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Build Response Suhu",
+        "func": "\nvar data = flow.get('lastSensor') || {\n    suhu: null,\n    kelembaban: null,\n    timestamp: null\n};\n\nmsg.payload = {\n    status: 'success',\n    data: data,\n    server_time: new Date().toISOString()\n};\n\nmsg.headers = {\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 360,
+        "wires": [
+            [
+                "d34bceefaeb1209b"
+            ]
+        ]
+    },
+    {
+        "id": "d34bceefaeb1209b",
+        "type": "http response",
+        "z": "66fa1f7c4b2f4156",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 570,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "11c16cb035f884bf",
+        "type": "http in",
+        "z": "66fa1f7c4b2f4156",
+        "name": "GET Data History",
+        "url": "/api/history",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 460,
+        "wires": [
+            [
+                "c6eb82872a1a4310"
+            ]
+        ]
+    },
+    {
+        "id": "c6eb82872a1a4310",
+        "type": "function",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Build Response History",
+        "func": "\nvar history = flow.get('history') || [];\n\nmsg.payload = {\n    status: 'success',\n    count: history.length,\n    data: history\n};\n\nmsg.headers = {\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 460,
+        "wires": [
+            [
+                "3bdc9fcf24d34cf4"
+            ]
+        ]
+    },
+    {
+        "id": "3bdc9fcf24d34cf4",
+        "type": "http response",
+        "z": "66fa1f7c4b2f4156",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 590,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "958057e0ecc2baf7",
+        "type": "http in",
+        "z": "66fa1f7c4b2f4156",
+        "name": "POST Kontrol",
+        "url": "/api/kontrol",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 520,
+        "wires": [
+            [
+                "fcdfce1204066bc2"
+            ]
+        ]
+    },
+    {
+        "id": "fcdfce1204066bc2",
+        "type": "function",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Validasi dan Publish",
+        "func": "\nvar body = msg.payload;\n\nif (!body.device || !body.action) {\n    msg.statusCode = 400;\n    msg.payload = {\n        status: 'error',\n        message: 'device dan action wajib diisi'\n    };\n\n    msg.headers = {\n        'Access-Control-Allow-Origin': '*'\n    };\n\n    return [msg, null];\n}\n\n// Mengirim perintah melalui MQTT\nvar mqttMsg = {\n    payload: body,\n    topic: 'iot/kontrol'\n};\n\nnode.send([null, mqttMsg]);\n\nmsg.statusCode = 200;\nmsg.payload = {\n    status: 'success',\n    message: 'Perintah terkirim',\n    sent: body\n};\n\nmsg.headers = {\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn [msg, null];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 520,
+        "wires": [
+            [
+                "869ec12b6200c2c6"
+            ],
+            [
+                "934fcee74537a1fe"
+            ]
+        ]
+    },
+    {
+        "id": "869ec12b6200c2c6",
+        "type": "http response",
+        "z": "66fa1f7c4b2f4156",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 490,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "934fcee74537a1fe",
+        "type": "mqtt out",
+        "z": "66fa1f7c4b2f4156",
+        "name": "Publish Kontrol",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "6631788550f7c0b4",
+        "x": 660,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "6631788550f7c0b4",
+        "type": "mqtt-broker",
+        "name": "Local Mosquitto",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "node-red-backend",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
